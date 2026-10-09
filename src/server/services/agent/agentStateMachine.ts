@@ -1,0 +1,289 @@
+// ─── Types ─────────────────────────────────────────
+
+export type AgentState =
+  | 'EMAIL_RECEIVED'
+  | 'CLASSIFYING'
+  | 'CHECKING_EXISTING'
+  | 'EXTRACTING'
+  | 'DETECTING_LANGUAGE'
+  | 'TRANSLATING'
+  | 'EXTRACTING_STRUCTURED'
+  | 'MEMBER_VALIDATION'
+  | 'ELIGIBILITY_CHECK'
+  | 'PROVIDER_VALIDATION'
+  | 'COMPLETENESS_CHECK'
+  | 'DUPLICATE_CHECK'
+  | 'MEDICAL_CODING'
+  | 'CLINICAL_VALIDATION'
+  | 'COVERAGE_ANALYSIS'
+  | 'ADJUDICATION'
+  | 'PAYMENT_CALCULATION'
+  | 'EDI_GENERATION'
+  | 'VALIDATING'
+  | 'BUILDING_FILE'
+  | 'COMPLETE'
+  | 'QUERYING_SENDER'
+  | 'QUERYING_MEMBER'
+  | 'QUERYING_PROVIDER'
+  | 'ESCALATED_HANDLER'
+  | 'ESCALATED_CLINICAL'
+  | 'ESCALATED_TEAM_LEAD'
+  | 'ESCALATED_ADMIN'
+  | 'DENIED'
+  | 'APPROVED'
+  | 'PARTIALLY_APPROVED';
+
+export type AgentDecision =
+  | 'PROCEED'
+  | 'QUERY_SENDER'
+  | 'ESCALATE_HANDLER'
+  | 'ESCALATE_TEAM_LEAD'
+  | 'ESCALATE_ADMIN'
+  | 'REJECT';
+
+export interface DecisionContext {
+  readonly completeness: number;
+  readonly confidence: number;
+  readonly hasLegalCorrespondence: boolean;
+  readonly isComplaint: boolean;
+  readonly isHighValue: boolean;
+  readonly highValueThreshold: number;
+  readonly hasMissingCriticalFields: boolean;
+  readonly missingFields: string[];
+  readonly memberFound: boolean;
+  readonly isEligible: boolean;
+  readonly isDuplicateExact: boolean;
+  readonly clinicalScore: number;
+}
+
+// ─── Constants ─────────────────────────────────────
+
+const CONFIDENCE_HIGH = 85;
+const CONFIDENCE_MODERATE = 60;
+const CONFIDENCE_LOW = 40;
+const COMPLETENESS_THRESHOLD = 80;
+
+/**
+ * Terminal states where the agent pipeline halts.
+ */
+const TERMINAL_STATES: ReadonlySet<AgentState> = new Set([
+  'COMPLETE',
+  'QUERYING_SENDER',
+  'QUERYING_MEMBER',
+  'QUERYING_PROVIDER',
+  'ESCALATED_HANDLER',
+  'ESCALATED_CLINICAL',
+  'ESCALATED_TEAM_LEAD',
+  'ESCALATED_ADMIN',
+  'DENIED',
+  'APPROVED',
+  'PARTIALLY_APPROVED',
+]);
+
+/**
+ * Transition map keyed by `${currentState}:${decision}`.
+ * Each entry maps to the next valid state.
+ */
+const STATE_TRANSITIONS: ReadonlyMap<string, AgentState> = new Map([
+  // EMAIL_RECEIVED
+  ['EMAIL_RECEIVED:PROCEED', 'CLASSIFYING'],
+  ['EMAIL_RECEIVED:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['EMAIL_RECEIVED:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['EMAIL_RECEIVED:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // CLASSIFYING
+  ['CLASSIFYING:PROCEED', 'CHECKING_EXISTING'],
+  ['CLASSIFYING:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['CLASSIFYING:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['CLASSIFYING:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // CHECKING_EXISTING
+  ['CHECKING_EXISTING:PROCEED', 'EXTRACTING'],
+  ['CHECKING_EXISTING:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['CHECKING_EXISTING:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['CHECKING_EXISTING:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // EXTRACTING
+  ['EXTRACTING:PROCEED', 'DETECTING_LANGUAGE'],
+  ['EXTRACTING:QUERY_SENDER', 'QUERYING_SENDER'],
+  ['EXTRACTING:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['EXTRACTING:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['EXTRACTING:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // DETECTING_LANGUAGE
+  ['DETECTING_LANGUAGE:PROCEED', 'TRANSLATING'],
+  ['DETECTING_LANGUAGE:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['DETECTING_LANGUAGE:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // TRANSLATING
+  ['TRANSLATING:PROCEED', 'EXTRACTING_STRUCTURED'],
+  ['TRANSLATING:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['TRANSLATING:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // EXTRACTING_STRUCTURED
+  ['EXTRACTING_STRUCTURED:PROCEED', 'MEMBER_VALIDATION'],
+  ['EXTRACTING_STRUCTURED:QUERY_SENDER', 'QUERYING_SENDER'],
+  ['EXTRACTING_STRUCTURED:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['EXTRACTING_STRUCTURED:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['EXTRACTING_STRUCTURED:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // MEMBER_VALIDATION
+  ['MEMBER_VALIDATION:PROCEED', 'ELIGIBILITY_CHECK'],
+  ['MEMBER_VALIDATION:QUERY_SENDER', 'QUERYING_MEMBER'],
+  ['MEMBER_VALIDATION:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['MEMBER_VALIDATION:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['MEMBER_VALIDATION:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // ELIGIBILITY_CHECK
+  ['ELIGIBILITY_CHECK:PROCEED', 'PROVIDER_VALIDATION'],
+  ['ELIGIBILITY_CHECK:REJECT', 'DENIED'],
+  ['ELIGIBILITY_CHECK:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['ELIGIBILITY_CHECK:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['ELIGIBILITY_CHECK:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // PROVIDER_VALIDATION
+  ['PROVIDER_VALIDATION:PROCEED', 'COMPLETENESS_CHECK'],
+  ['PROVIDER_VALIDATION:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['PROVIDER_VALIDATION:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['PROVIDER_VALIDATION:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // COMPLETENESS_CHECK
+  ['COMPLETENESS_CHECK:PROCEED', 'DUPLICATE_CHECK'],
+  ['COMPLETENESS_CHECK:QUERY_SENDER', 'QUERYING_MEMBER'],
+  ['COMPLETENESS_CHECK:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['COMPLETENESS_CHECK:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['COMPLETENESS_CHECK:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // DUPLICATE_CHECK
+  ['DUPLICATE_CHECK:PROCEED', 'MEDICAL_CODING'],
+  ['DUPLICATE_CHECK:REJECT', 'DENIED'],
+  ['DUPLICATE_CHECK:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['DUPLICATE_CHECK:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['DUPLICATE_CHECK:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // MEDICAL_CODING
+  ['MEDICAL_CODING:PROCEED', 'CLINICAL_VALIDATION'],
+  ['MEDICAL_CODING:QUERY_SENDER', 'QUERYING_SENDER'],
+  ['MEDICAL_CODING:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['MEDICAL_CODING:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['MEDICAL_CODING:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // CLINICAL_VALIDATION
+  ['CLINICAL_VALIDATION:PROCEED', 'COVERAGE_ANALYSIS'],
+  ['CLINICAL_VALIDATION:ESCALATE_HANDLER', 'ESCALATED_CLINICAL'],
+  ['CLINICAL_VALIDATION:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['CLINICAL_VALIDATION:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // COVERAGE_ANALYSIS
+  ['COVERAGE_ANALYSIS:PROCEED', 'ADJUDICATION'],
+  ['COVERAGE_ANALYSIS:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['COVERAGE_ANALYSIS:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['COVERAGE_ANALYSIS:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // ADJUDICATION
+  ['ADJUDICATION:PROCEED', 'PAYMENT_CALCULATION'],
+  ['ADJUDICATION:REJECT', 'DENIED'],
+  ['ADJUDICATION:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['ADJUDICATION:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['ADJUDICATION:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // PAYMENT_CALCULATION
+  ['PAYMENT_CALCULATION:PROCEED', 'EDI_GENERATION'],
+  ['PAYMENT_CALCULATION:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['PAYMENT_CALCULATION:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // EDI_GENERATION
+  ['EDI_GENERATION:PROCEED', 'BUILDING_FILE'],
+  ['EDI_GENERATION:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['EDI_GENERATION:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // VALIDATING
+  ['VALIDATING:PROCEED', 'BUILDING_FILE'],
+  ['VALIDATING:QUERY_SENDER', 'QUERYING_SENDER'],
+  ['VALIDATING:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['VALIDATING:ESCALATE_TEAM_LEAD', 'ESCALATED_TEAM_LEAD'],
+  ['VALIDATING:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+
+  // BUILDING_FILE
+  ['BUILDING_FILE:PROCEED', 'COMPLETE'],
+  ['BUILDING_FILE:ESCALATE_HANDLER', 'ESCALATED_HANDLER'],
+  ['BUILDING_FILE:ESCALATE_ADMIN', 'ESCALATED_ADMIN'],
+]);
+
+// ─── State Machine ─────────────────────────────────
+
+export class AgentStateMachine {
+  /**
+   * Evaluate a decision based on claim context.
+   * Pure function implementing the agent's decision tree.
+   */
+  evaluateDecision(context: DecisionContext): AgentDecision {
+    // 1. Exact duplicate → reject immediately
+    if (context.isDuplicateExact) {
+      return 'REJECT';
+    }
+
+    // 2. Member not eligible → reject
+    if (!context.isEligible) {
+      return 'REJECT';
+    }
+
+    // 3. Member not found → query sender for member details
+    if (!context.memberFound) {
+      return 'QUERY_SENDER';
+    }
+
+    // 4. Complaints and legal correspondence always go to team lead
+    if (context.isComplaint || context.hasLegalCorrespondence) {
+      return 'ESCALATE_TEAM_LEAD';
+    }
+
+    // 5. High value claims go to team lead
+    if (context.isHighValue) {
+      return 'ESCALATE_TEAM_LEAD';
+    }
+
+    // 6. High confidence + high completeness + no critical fields missing → proceed
+    if (
+      context.confidence >= CONFIDENCE_HIGH &&
+      context.completeness >= COMPLETENESS_THRESHOLD &&
+      !context.hasMissingCriticalFields
+    ) {
+      return 'PROCEED';
+    }
+
+    // 7. Missing critical fields → query sender for more info
+    if (context.hasMissingCriticalFields) {
+      return 'QUERY_SENDER';
+    }
+
+    // 8. Moderate confidence (60-84) → escalate to handler
+    if (context.confidence >= CONFIDENCE_MODERATE) {
+      return 'ESCALATE_HANDLER';
+    }
+
+    // 9. Low confidence (40-59) → escalate to handler with lower confidence
+    if (context.confidence >= CONFIDENCE_LOW) {
+      return 'ESCALATE_HANDLER';
+    }
+
+    // 10. Very low confidence (<40) → escalate to admin
+    return 'ESCALATE_ADMIN';
+  }
+
+  /**
+   * Get the next state given a current state and decision.
+   * Returns undefined if the transition is not defined.
+   */
+  getNextState(currentState: AgentState, decision: AgentDecision): AgentState | undefined {
+    const key = `${currentState}:${decision}`;
+    return STATE_TRANSITIONS.get(key);
+  }
+
+  /**
+   * Check whether a state is terminal (pipeline halts).
+   */
+  isTerminalState(state: AgentState): boolean {
+    return TERMINAL_STATES.has(state);
+  }
+}

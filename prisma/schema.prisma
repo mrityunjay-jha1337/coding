@@ -1,0 +1,779 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Organisation {
+  id              String           @id @default(uuid())
+  name            String
+  type            OrgType
+  fcaNumber       String?          @map("fca_number")
+  settings        Json             @default("{}")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  claims          Claim[]
+  clients         Client[]
+  gmailConnectors GmailConnector[]
+  reportSchedules ReportSchedule[]
+  roles           Role[]
+  teams           Team[]
+  users           User[]
+
+  @@map("organisations")
+}
+
+model User {
+  id                 String         @id @default(uuid())
+  orgId              String         @map("org_id")
+  email              String         @unique
+  passwordHash       String         @map("password_hash")
+  name               String
+  roleId             String         @map("role_id")
+  mfaSecret          String?        @map("mfa_secret")
+  mfaEnabled         Boolean        @default(false) @map("mfa_enabled")
+  specialisation     String?
+  status             UserStatus     @default(PENDING)
+  emailVerified      Boolean        @default(false) @map("email_verified")
+  lastLoginAt        DateTime?      @map("last_login_at")
+  failedLoginCount   Int            @default(0) @map("failed_login_count")
+  lockedUntil        DateTime?      @map("locked_until")
+  passwordHistory    String[]       @map("password_history")
+  passwordChangedAt  DateTime?      @map("password_changed_at")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  auditEventsAsActor AuditEvent[]   @relation("AuditActor")
+  reviewedCoding     ClaimCoding[]  @relation("Reviewer")
+  assignedClaims     Claim[]        @relation("AssignedHandler")
+  notifications      Notification[]
+  sessions           Session[]
+  teamMemberships    TeamMember[]
+  organisation       Organisation   @relation(fields: [orgId], references: [id])
+  role               Role           @relation(fields: [roleId], references: [id])
+
+  @@index([orgId])
+  @@index([email])
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  refreshToken String   @unique @map("refresh_token")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Role {
+  id           String        @id @default(uuid())
+  orgId        String?       @map("org_id")
+  name         String
+  permissions  Json          @default("[]")
+  isSystem     Boolean       @default(false) @map("is_system")
+  parentRoleId String?       @map("parent_role_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  organisation Organisation? @relation(fields: [orgId], references: [id])
+  parentRole   Role?         @relation("RoleInheritance", fields: [parentRoleId], references: [id])
+  childRoles   Role[]        @relation("RoleInheritance")
+  users        User[]
+
+  @@map("roles")
+}
+
+model Team {
+  id             String              @id @default(uuid())
+  orgId          String              @map("org_id")
+  name           String
+  leadId         String?             @map("lead_id")
+  settings       Json                @default("{}")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  claims         Claim[]
+  clientMappings ClientTeamMapping[]
+  members        TeamMember[]
+  organisation   Organisation        @relation(fields: [orgId], references: [id])
+
+  @@map("teams")
+}
+
+model TeamMember {
+  teamId   String   @map("team_id")
+  userId   String   @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, userId])
+  @@map("team_members")
+}
+
+model Client {
+  id           String              @id @default(uuid())
+  orgId        String              @map("org_id")
+  name         String
+  contactEmail String              @map("contact_email")
+  slaConfig    Json                @default("{}") @map("sla_config")
+  policyLines  Json                @default("[]") @map("policy_lines")
+  settings     Json                @default("{}")
+  status       ClientStatus        @default(ACTIVE)
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  claims       Claim[]
+  teamMappings ClientTeamMapping[]
+  organisation Organisation        @relation(fields: [orgId], references: [id])
+
+  @@map("clients")
+}
+
+model ClientTeamMapping {
+  clientId String @map("client_id")
+  teamId   String @map("team_id")
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, teamId])
+  @@map("client_team_mapping")
+}
+
+model GmailConnector {
+  id           String          @id @default(uuid())
+  orgId        String          @map("org_id")
+  email        String
+  oauthTokens  String          @map("oauth_tokens")
+  labelsConfig Json            @default("{}") @map("labels_config")
+  filterRules  Json            @default("[]") @map("filter_rules")
+  status       ConnectorStatus @default(DISCONNECTED)
+  lastSyncAt   DateTime?       @map("last_sync_at")
+  historyId    String?         @map("history_id")
+  pubsubExpiry DateTime?       @map("pubsub_expiry")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  organisation Organisation    @relation(fields: [orgId], references: [id])
+
+  @@map("gmail_connectors")
+}
+
+model Claim {
+  id                String                @id @default(uuid())
+  orgId             String                @map("org_id")
+  clientId          String?               @map("client_id")
+  claimReference    String                @unique @map("claim_reference")
+  status            ClaimStatus           @default(NEW)
+  priority          Int                   @default(50)
+  claimant          Json?
+  policy            Json?
+  incident          Json?
+  treatment         Json?
+  financials        Json?
+  coverageAnalysis  Json?                 @map("coverage_analysis")
+  overallConfidence Float?                @map("overall_confidence")
+  assignedTo        String?               @map("assigned_to")
+  teamId            String?               @map("team_id")
+  slaDeadline       DateTime?             @map("sla_deadline")
+  sourceEmailId     String?               @map("source_email_id")
+  sourceThreadId    String?               @map("source_thread_id")
+  processingTimeMs  Int?                  @map("processing_time_ms")
+  errors            String[]              @default([])
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  completedAt       DateTime?             @map("completed_at")
+  declaration       Json?
+  auditEvents       AuditEvent[]
+  coding            ClaimCoding[]
+  correspondence    ClaimCorrespondence[]
+  documents         ClaimDocument[]
+  queries           ClaimQuery[]
+  assignedHandler   User?                 @relation("AssignedHandler", fields: [assignedTo], references: [id])
+  client            Client?               @relation(fields: [clientId], references: [id])
+  organisation      Organisation          @relation(fields: [orgId], references: [id])
+  team              Team?                 @relation(fields: [teamId], references: [id])
+  escalations       Escalation[]
+
+  @@index([orgId, status])
+  @@index([clientId])
+  @@index([assignedTo])
+  @@index([claimReference])
+  @@index([createdAt])
+  @@map("claims")
+}
+
+model ClaimDocument {
+  id                   String   @id @default(uuid())
+  claimId              String   @map("claim_id")
+  fileKey              String   @map("file_key")
+  originalFilename     String   @map("original_filename")
+  mimeType             String   @map("mime_type")
+  fileSizeBytes        Int      @map("file_size_bytes")
+  docType              DocType  @map("doc_type")
+  extractedText        String?  @map("extracted_text")
+  translatedText       String?  @map("translated_text")
+  language             String?
+  pageCount            Int?     @map("page_count")
+  extractionConfidence Float?   @map("extraction_confidence")
+  handwrittenPercent   Float?   @map("handwritten_percent")
+  processingStatus     String?  @map("processing_status")
+  createdAt            DateTime @default(now()) @map("created_at")
+  claim                Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+  @@map("claim_documents")
+}
+
+model ClaimCoding {
+  id                 String    @id @default(uuid())
+  claimId            String    @map("claim_id")
+  code               String
+  codeType           CodeType  @map("code_type")
+  description        String
+  llmDescription     String?   @map("llm_description")
+  confidence         Float
+  evidenceSource     String?   @map("evidence_source")
+  evidenceTranslated String?   @map("evidence_translated")
+  pageNumber         Int?      @map("page_number")
+  section            String?
+  pathUsed           String?   @map("path_used")
+  isValidated        Boolean   @default(false) @map("is_validated")
+  needsReview        Boolean   @default(false) @map("needs_review")
+  isPrimary          Boolean   @default(false) @map("is_primary")
+  reasoning          String?
+  alternativeCodes   Json?     @map("alternative_codes")
+  reviewerId         String?   @map("reviewer_id")
+  reviewerAction     String?   @map("reviewer_action")
+  reviewerNote       String?   @map("reviewer_note")
+  originalCode       String?   @map("original_code")
+  reviewedAt         DateTime? @map("reviewed_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  claim              Claim     @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  reviewer           User?     @relation("Reviewer", fields: [reviewerId], references: [id])
+
+  @@index([claimId])
+  @@index([code])
+  @@map("claim_coding")
+}
+
+model ClaimCorrespondence {
+  id             String                  @id @default(uuid())
+  claimId        String                  @map("claim_id")
+  direction      CorrespondenceDirection
+  type           String
+  gmailMessageId String?                 @map("gmail_message_id")
+  gmailThreadId  String?                 @map("gmail_thread_id")
+  fromEmail      String                  @map("from_email")
+  toEmail        String                  @map("to_email")
+  subject        String
+  body           String
+  attachments    Json                    @default("[]")
+  sentAt         DateTime?               @map("sent_at")
+  createdAt      DateTime                @default(now()) @map("created_at")
+  claim          Claim                   @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+  @@index([gmailThreadId])
+  @@map("claim_correspondence")
+}
+
+model ClaimQuery {
+  id                 String      @id @default(uuid())
+  claimId            String      @map("claim_id")
+  queryType          String      @map("query_type")
+  queryText          String      @map("query_text")
+  sentAt             DateTime?   @map("sent_at")
+  responseReceivedAt DateTime?   @map("response_received_at")
+  responseText       String?     @map("response_text")
+  status             QueryStatus @default(DRAFT)
+  followUpCount      Int         @default(0) @map("follow_up_count")
+  nextFollowUp       DateTime?   @map("next_follow_up")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  claim              Claim       @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+  @@map("claim_queries")
+}
+
+model Escalation {
+  id          String         @id @default(uuid())
+  claimId     String         @map("claim_id")
+  tier        EscalationTier
+  reason      String
+  details     Json           @default("{}")
+  escalatedBy String         @map("escalated_by")
+  assignedTo  String?        @map("assigned_to")
+  resolvedBy  String?        @map("resolved_by")
+  resolvedAt  DateTime?      @map("resolved_at")
+  resolution  String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  claim       Claim          @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+  @@map("escalations")
+}
+
+model AuditEvent {
+  id            String   @id @default(uuid())
+  eventType     String   @map("event_type")
+  actorType     String   @map("actor_type")
+  actorId       String?  @map("actor_id")
+  targetType    String   @map("target_type")
+  targetId      String?  @map("target_id")
+  action        String
+  details       Json     @default("{}")
+  previousValue Json?    @map("previous_value")
+  newValue      Json?    @map("new_value")
+  ipAddress     String?  @map("ip_address")
+  sessionId     String?  @map("session_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  actor         User?    @relation("AuditActor", fields: [actorId], references: [id])
+  claim         Claim?   @relation(fields: [targetId], references: [id])
+
+  @@index([eventType])
+  @@index([actorId])
+  @@index([targetId])
+  @@index([createdAt])
+  @@map("audit_events")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  type      String
+  title     String
+  body      String
+  data      Json      @default("{}")
+  channel   String    @default("in_app")
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+model ReportSchedule {
+  id           String       @id @default(uuid())
+  orgId        String       @map("org_id")
+  userId       String       @map("user_id")
+  reportType   String       @map("report_type")
+  config       Json         @default("{}")
+  scheduleCron String       @map("schedule_cron")
+  lastRun      DateTime?    @map("last_run")
+  nextRun      DateTime?    @map("next_run")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  organisation Organisation @relation(fields: [orgId], references: [id])
+
+  @@map("report_schedules")
+}
+
+model CorrespondenceTemplate {
+  id        String   @id @default(uuid())
+  orgId     String   @map("org_id")
+  name      String
+  type      String
+  subject   String
+  body      String
+  language  String   @default("en")
+  version   Int      @default(1)
+  status    String   @default("active")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("correspondence_templates")
+}
+
+model WorkflowConfig {
+  id        String   @id @default(uuid())
+  orgId     String   @map("org_id")
+  clientId  String?  @map("client_id")
+  name      String
+  rules     Json
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("workflow_configs")
+}
+
+model HealthPlan {
+  id                String    @id @default(uuid())
+  name              String
+  tier              PlanTier
+  annualMaximumUsd  Float?    @map("annual_maximum_usd")
+  annualMaximumHkd  Float?    @map("annual_maximum_hkd")
+  geographicOptions Json      @default("[]") @map("geographic_options")
+  networkOptions    Json      @default("[]") @map("network_options")
+  deductibleOptions Json      @default("[]") @map("deductible_options")
+  coInsuranceOption Json?     @map("co_insurance_option")
+  benefits          Json      @default("{}") @map("benefits")
+  exclusions        Json      @default("[]") @map("exclusions")
+  waitingPeriods    Json      @default("{}") @map("waiting_periods")
+  effectiveFrom     DateTime  @map("effective_from")
+  effectiveTo       DateTime? @map("effective_to")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  members           Member[]
+
+  @@map("health_plans")
+}
+
+model MemberGroup {
+  id           String   @id @default(uuid())
+  groupName    String   @map("group_name")
+  companyName  String   @map("company_name")
+  contactEmail String   @map("contact_email")
+  createdAt    DateTime @default(now()) @map("created_at")
+  members      Member[]
+
+  @@map("member_groups")
+}
+
+model Member {
+  id                    String          @id @default(uuid())
+  membershipNumber      String          @unique @map("membership_number")
+  groupId               String?         @map("group_id")
+  title                 String?
+  firstName             String          @map("first_name")
+  lastName              String          @map("last_name")
+  dateOfBirth           DateTime        @map("date_of_birth")
+  email                 String?
+  phone                 String?
+  address               Json            @default("{}")
+  preferredLanguage     String          @default("en") @map("preferred_language")
+  planId                String          @map("plan_id")
+  planTier              PlanTier        @map("plan_tier")
+  policyStartDate       DateTime        @map("policy_start_date")
+  policyEndDate         DateTime        @map("policy_end_date")
+  deductibleAmount      Float?          @map("deductible_amount")
+  deductibleCurrency    String?         @map("deductible_currency")
+  deductibleUsed        Float           @default(0) @map("deductible_used")
+  coInsuranceRate       Float?          @map("co_insurance_rate")
+  networkOption         NetworkOption   @default(STANDARD) @map("network_option")
+  geographicCover       GeoCover        @default(WORLDWIDE) @map("geographic_cover")
+  preExistingConditions Json            @default("[]") @map("pre_existing_conditions")
+  status                MemberStatus    @default(MEMBER_ACTIVE)
+  renewalDate           DateTime?       @map("renewal_date")
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @updatedAt @map("updated_at")
+  memberClaims          MemberClaim[]
+  group                 MemberGroup?    @relation(fields: [groupId], references: [id])
+  plan                  HealthPlan      @relation(fields: [planId], references: [id])
+  paymentDetails        PaymentDetail[]
+
+  @@index([membershipNumber])
+  @@index([planId])
+  @@map("members")
+}
+
+model PaymentDetail {
+  id                String   @id @default(uuid())
+  memberId          String   @map("member_id")
+  payeeType         String   @map("payee_type")
+  method            String
+  bankName          String?  @map("bank_name")
+  swiftCode         String?  @map("swift_code")
+  accountNumber     String?  @map("account_number")
+  sortCode          String?  @map("sort_code")
+  iban              String?
+  accountHolderName String?  @map("account_holder_name")
+  accountCurrency   String?  @map("account_currency")
+  chequeCurrency    String?  @map("cheque_currency")
+  isDefault         Boolean  @default(false) @map("is_default")
+  createdAt         DateTime @default(now()) @map("created_at")
+  member            Member   @relation(fields: [memberId], references: [id])
+
+  @@index([memberId])
+  @@map("payment_details")
+}
+
+model Provider {
+  id                  String                   @id @default(uuid())
+  providerName        String                   @map("provider_name")
+  facilityName        String?                  @map("facility_name")
+  providerType        ProviderType             @map("provider_type")
+  specialty           Json                     @default("[]")
+  licenseNumber       String?                  @map("license_number")
+  address             Json                     @default("{}")
+  email               String?
+  phone               String?
+  bankDetails         String?                  @map("bank_details")
+  networkStatus       ProviderNetwork          @default(PENDING_VERIFICATION) @map("network_status")
+  networkType         NetworkOption            @default(STANDARD) @map("network_type")
+  bupaProviderId      String?                  @map("bupa_provider_id")
+  accreditationStatus AccreditationStatus      @default(PENDING_ACCREDITATION) @map("accreditation_status")
+  country             String
+  defaultCurrency     String?                  @map("default_currency")
+  lastVerifiedAt      DateTime?                @map("last_verified_at")
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+  providerClaims      ProviderClaim[]
+  networkMappings     ProviderNetworkMapping[]
+
+  @@index([providerName])
+  @@index([country])
+  @@map("providers")
+}
+
+model ProviderNetworkMapping {
+  id              String   @id @default(uuid())
+  providerId      String   @map("provider_id")
+  planTier        PlanTier @map("plan_tier")
+  isInNetwork     Boolean  @map("is_in_network")
+  negotiatedRates Json?    @map("negotiated_rates")
+  provider        Provider @relation(fields: [providerId], references: [id])
+
+  @@unique([providerId, planTier])
+  @@map("provider_network_mapping")
+}
+
+model MemberClaim {
+  id       String @id @default(uuid())
+  memberId String @map("member_id")
+  claimId  String @map("claim_id")
+  member   Member @relation(fields: [memberId], references: [id])
+
+  @@unique([memberId, claimId])
+  @@index([claimId])
+  @@map("member_claims")
+}
+
+model ProviderClaim {
+  id         String   @id @default(uuid())
+  providerId String   @map("provider_id")
+  claimId    String   @map("claim_id")
+  provider   Provider @relation(fields: [providerId], references: [id])
+
+  @@unique([providerId, claimId])
+  @@index([claimId])
+  @@map("provider_claims")
+}
+
+model CoverageDecision {
+  id                 String   @id @default(uuid())
+  claimId            String   @map("claim_id")
+  lineItemIndex      Int      @map("line_item_index")
+  benefitName        String   @map("benefit_name")
+  isCovered          Boolean  @map("is_covered")
+  coverageLimit      Float?   @map("coverage_limit")
+  amountClaimed      Float    @map("amount_claimed")
+  amountPayable      Float    @map("amount_payable")
+  deductibleApplied  Float    @default(0) @map("deductible_applied")
+  coInsuranceApplied Float    @default(0) @map("co_insurance_applied")
+  networkPenalty     Float    @default(0) @map("network_penalty")
+  denialReason       String?  @map("denial_reason")
+  exclusionCode      String?  @map("exclusion_code")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([claimId])
+  @@map("coverage_decisions")
+}
+
+model PreAuthorization {
+  id                   String        @id @default(uuid())
+  claimId              String?       @map("claim_id")
+  memberId             String        @map("member_id")
+  requestedDate        DateTime      @default(now()) @map("requested_date")
+  approvedDate         DateTime?     @map("approved_date")
+  deniedDate           DateTime?     @map("denied_date")
+  status               PreAuthStatus @default(REQUESTED)
+  treatmentType        String        @map("treatment_type")
+  authorizedAmount     Float?        @map("authorized_amount")
+  authorizedProcedures Json          @default("[]") @map("authorized_procedures")
+  authorizationNumber  String?       @unique @map("authorization_number")
+  validFrom            DateTime?     @map("valid_from")
+  validTo              DateTime?     @map("valid_to")
+  requestedBy          String        @map("requested_by")
+  notes                String?
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  @@index([memberId])
+  @@index([claimId])
+  @@index([authorizationNumber])
+  @@map("pre_authorizations")
+}
+
+model Appeal {
+  id             String       @id @default(uuid())
+  claimId        String       @map("claim_id")
+  appealDate     DateTime     @default(now()) @map("appeal_date")
+  reason         String
+  supportingDocs Json         @default("[]") @map("supporting_docs")
+  status         AppealStatus @default(SUBMITTED)
+  reviewedBy     String?      @map("reviewed_by")
+  reviewDate     DateTime?    @map("review_date")
+  outcome        String?
+  notes          String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@index([claimId])
+  @@map("appeals")
+}
+
+model EdiTransaction {
+  id            String   @id @default(uuid())
+  claimId       String   @map("claim_id")
+  ediType       String   @map("edi_type")
+  ediContent    String   @map("edi_content")
+  controlNumber String   @map("control_number")
+  status        String   @default("GENERATED")
+  generatedAt   DateTime @default(now()) @map("generated_at")
+
+  @@index([claimId])
+  @@map("edi_transactions")
+}
+
+enum OrgType {
+  BPO
+  TPA
+  INSURER
+  BROKER
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  LOCKED
+}
+
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+  ONBOARDING
+}
+
+enum ConnectorStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+  AUTH_EXPIRED
+}
+
+enum ClaimStatus {
+  NEW
+  INGESTING
+  EXTRACTING
+  TRANSLATING
+  CODING
+  VALIDATING
+  QUERYING
+  REVIEWING
+  BUILDING
+  COMPLETE
+  ON_HOLD
+  REOPENED
+  CLOSED
+  QUERYING_MEMBER
+  QUERYING_PROVIDER
+  ESCALATED_HANDLER
+  ESCALATED_CLINICAL
+  DENIED
+  DUPLICATE
+}
+
+enum DocType {
+  CLINICAL_NOTE
+  PRESCRIPTION
+  DIAGNOSTIC_REPORT
+  INVOICE
+  CLAIM_FORM
+  IDENTITY_DOCUMENT
+  POLICY_DOCUMENT
+  CORRESPONDENCE
+  PHOTOGRAPH
+  LEGAL_DOCUMENT
+  UNKNOWN
+}
+
+enum CodeType {
+  ICD10
+  OPCS4
+  CPT
+}
+
+enum CorrespondenceDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum QueryStatus {
+  DRAFT
+  SENT
+  AWAITING_RESPONSE
+  RESPONDED
+  CLOSED
+  ESCALATED
+}
+
+enum EscalationTier {
+  QUERY_SENDER
+  HANDLER
+  TEAM_LEAD
+  ADMIN
+}
+
+enum PlanTier {
+  MAJOR_MEDICAL
+  SELECT
+  PREMIER
+  ELITE
+  ULTIMATE
+}
+
+enum MemberStatus {
+  MEMBER_ACTIVE @map("ACTIVE")
+  SUSPENDED
+  LAPSED
+  CANCELLED
+}
+
+enum NetworkOption {
+  STANDARD
+  COMPREHENSIVE
+}
+
+enum GeoCover {
+  WORLDWIDE
+  WORLDWIDE_EXCL_US
+}
+
+enum ProviderType {
+  HOSPITAL
+  CLINIC
+  PRACTITIONER
+  LABORATORY
+  PHARMACY
+}
+
+enum ProviderNetwork {
+  IN_NETWORK
+  OUT_OF_NETWORK
+  PENDING_VERIFICATION
+}
+
+enum AccreditationStatus {
+  ACCREDITED
+  PENDING_ACCREDITATION   @map("PENDING")
+  ACCREDITATION_SUSPENDED @map("SUSPENDED")
+  REVOKED
+}
+
+enum PreAuthStatus {
+  REQUESTED
+  APPROVED
+  DENIED
+  EXPIRED
+}
+
+enum AppealStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  UPHELD
+  OVERTURNED
+}

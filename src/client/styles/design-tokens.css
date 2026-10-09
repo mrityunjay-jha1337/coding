@@ -1,0 +1,81 @@
+:root {
+  --color-bg-base: #08111f;
+  --color-bg-primary: #0d1829;
+  --color-bg-secondary: #132238;
+  --color-bg-card: rgba(15, 27, 45, 0.84);
+  --color-bg-card-hover: rgba(31, 47, 73, 0.92);
+  --color-bg-elevated: #18304d;
+  --color-bg-input: rgba(7, 16, 29, 0.76);
+
+  --color-border-default: rgba(105, 137, 181, 0.18);
+  --color-border-subtle: rgba(105, 137, 181, 0.08);
+  --color-border-focus: #58a6ff;
+  --color-border-error: #ef4444;
+
+  --color-text-primary: #edf4ff;
+  --color-text-secondary: #bdd0eb;
+  --color-text-muted: #7f97b9;
+  --color-text-inverse: #07111f;
+  --color-text-link: #7db8ff;
+
+  --color-accent-blue: #3b82f6;
+  --color-accent-green: #22c55e;
+  --color-accent-red: #ef4444;
+  --color-accent-yellow: #f59e0b;
+  --color-accent-indigo: #818cf8;
+
+  --color-status-success-text: #86efac;
+  --color-status-danger-text: #fca5a5;
+  --color-status-warning-text: #fcd34d;
+  --color-status-info-text: #93c5fd;
+
+  --color-accent-blue-light: rgba(59, 130, 246, 0.16);
+  --color-accent-green-light: rgba(34, 197, 94, 0.16);
+  --color-accent-red-light: rgba(239, 68, 68, 0.16);
+  --color-accent-yellow-light: rgba(245, 158, 11, 0.16);
+
+  --font-sans: 'Manrope', 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+
+  --radius-lg: 1.5rem;
+  --radius-full: 999px;
+
+  --shadow-md: 0 20px 50px rgba(0, 0, 0, 0.2);
+  --shadow-glow-blue: 0 0 0 1px rgba(59, 130, 246, 0.28), 0 18px 50px rgba(59, 130, 246, 0.18);
+
+  --ease-default: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-slow: 340ms;
+
+  --sidebar-width: 300px;
+  --sidebar-width-collapsed: 92px;
+  --header-height: 84px;
+  --content-max-width: 1440px;
+}
+
+[data-theme='light'] {
+  --color-bg-base: #f4f8fc;
+  --color-bg-primary: #ecf2f8;
+  --color-bg-secondary: #ffffff;
+  --color-bg-card: rgba(255, 255, 255, 0.94);
+  --color-bg-card-hover: rgba(248, 250, 252, 0.98);
+  --color-bg-elevated: #ffffff;
+  --color-bg-input: rgba(255, 255, 255, 0.94);
+  --color-border-default: rgba(15, 23, 42, 0.12);
+  --color-border-subtle: rgba(15, 23, 42, 0.06);
+  --color-text-primary: #122033;
+  --color-text-secondary: #334a68;
+  --color-text-muted: #64748b;
+  --color-text-inverse: #ffffff;
+
+  --color-accent-green: #15803d;
+  --color-accent-red: #b91c1c;
+  --color-accent-yellow: #a16207;
+  --color-accent-indigo: #4338ca;
+  --color-accent-blue: #1d4ed8;
+
+  --color-status-success-text: #166534;
+  --color-status-danger-text: #991b1b;
+  --color-status-warning-text: #854d0e;
+  --color-status-info-text: #1e40af;
+}

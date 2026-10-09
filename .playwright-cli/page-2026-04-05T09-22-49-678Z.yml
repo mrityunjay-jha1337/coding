@@ -1,0 +1,95 @@
+- generic [ref=e2]:
+  - generic [ref=e7]:
+    - complementary [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: CI
+        - generic [ref=e11]:
+          - generic [ref=e12]: ClaimsIntell
+          - generic [ref=e13]: RCM operating system
+      - button "Toggle sidebar" [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+      - navigation [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]: Operations
+          - link "Dashboard" [ref=e20] [cursor=pointer]:
+            - /url: /app/dashboard
+            - img [ref=e21]
+            - generic [ref=e26]: Dashboard
+          - link "Claims" [ref=e27] [cursor=pointer]:
+            - /url: /app/claims
+            - img [ref=e28]
+            - generic [ref=e32]: Claims
+          - link "ICD Extractor" [ref=e33] [cursor=pointer]:
+            - /url: /app/icd
+            - img [ref=e34]
+            - generic [ref=e38]: ICD Extractor
+          - link "Denials" [ref=e39] [cursor=pointer]:
+            - /url: /app/denials
+            - img [ref=e40]
+            - generic [ref=e42]: Denials
+        - generic [ref=e43]:
+          - generic [ref=e44]: Intelligence
+          - link "Analytics" [ref=e45] [cursor=pointer]:
+            - /url: /app/analytics
+            - img [ref=e46]
+            - generic [ref=e56]: Analytics
+          - link "Notifications" [ref=e57] [cursor=pointer]:
+            - /url: /app/notifications
+            - img [ref=e58]
+            - generic [ref=e61]: Notifications
+          - link "Audit Log" [ref=e62] [cursor=pointer]:
+            - /url: /app/audit
+            - img [ref=e63]
+            - generic [ref=e65]: Audit Log
+        - generic [ref=e66]:
+          - generic [ref=e67]: Admin
+          - link "Teams" [ref=e68] [cursor=pointer]:
+            - /url: /app/teams
+            - img [ref=e69]
+            - generic [ref=e74]: Teams
+          - link "Users" [ref=e75] [cursor=pointer]:
+            - /url: /app/users
+            - img [ref=e76]
+            - generic [ref=e80]: Users
+          - link "Clients" [ref=e81] [cursor=pointer]:
+            - /url: /app/clients
+            - img [ref=e82]
+            - generic [ref=e86]: Clients
+          - link "Connectors" [ref=e87] [cursor=pointer]:
+            - /url: /app/connectors
+            - img [ref=e88]
+            - generic [ref=e92]: Connectors
+      - generic [ref=e93]:
+        - button "Light mode" [ref=e94] [cursor=pointer]:
+          - img [ref=e95]
+          - generic [ref=e101]: Light mode
+        - link "Settings" [ref=e102] [cursor=pointer]:
+          - /url: /app/settings
+          - img [ref=e103]
+          - generic [ref=e106]: Settings
+        - button "Sign out" [ref=e107] [cursor=pointer]:
+          - img [ref=e108]
+          - generic [ref=e111]: Sign out
+    - generic [ref=e112]:
+      - banner [ref=e113]:
+        - generic [ref=e114]:
+          - generic [ref=e115]: Operational workspace
+          - generic [ref=e116]:
+            - strong [ref=e117]: QA Org A
+            - generic [ref=e119]: QA Admin
+            - generic [ref=e121]: BPO_ADMIN
+        - generic [ref=e123]:
+          - generic [ref=e124]: Q
+          - generic [ref=e125]: qa.admin.audit1@example.com
+      - main [ref=e126]:
+        - generic [ref=e127]:
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - generic [ref=e130]: Admin
+              - heading "Gmail connectors" [level=1] [ref=e131]
+              - paragraph [ref=e132]: Manage ingestion mailboxes, OAuth connection state, and filter-rule readiness for inbound correspondence. If OAuth is not configured locally, the connect action will explain what is missing instead of opening Google.
+            - button "Connect Gmail" [active] [ref=e134] [cursor=pointer]
+          - generic [ref=e136]:
+            - heading "No Gmail connectors" [level=3] [ref=e138]
+            - paragraph [ref=e139]: Start the OAuth flow to attach the first mailbox.
+  - status [ref=e145]: Google OAuth is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI in .env.

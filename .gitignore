@@ -1,0 +1,15 @@
+node_modules/
+dist/
+uploads/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+logs/
+.playwright-mcp/
+.ruff_cache/
+
+/generated/prisma
+dev.sh
+run.md

@@ -1,0 +1,141 @@
+- generic [ref=e2]:
+  - generic [ref=e27]:
+    - complementary [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]: CI
+        - generic [ref=e31]:
+          - generic [ref=e32]: ClaimsIntell
+          - generic [ref=e33]: RCM operating system
+      - button "Toggle sidebar" [ref=e34] [cursor=pointer]:
+        - img [ref=e35]
+      - navigation [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]: Operations
+          - link "Dashboard" [ref=e40] [cursor=pointer]:
+            - /url: /app/dashboard
+            - img [ref=e41]
+            - generic [ref=e46]: Dashboard
+          - link "Claims" [ref=e47] [cursor=pointer]:
+            - /url: /app/claims
+            - img [ref=e48]
+            - generic [ref=e52]: Claims
+          - link "ICD Extractor" [ref=e53] [cursor=pointer]:
+            - /url: /app/icd
+            - img [ref=e54]
+            - generic [ref=e58]: ICD Extractor
+          - link "Denials" [ref=e59] [cursor=pointer]:
+            - /url: /app/denials
+            - img [ref=e60]
+            - generic [ref=e62]: Denials
+        - generic [ref=e63]:
+          - generic [ref=e64]: Intelligence
+          - link "Analytics" [ref=e65] [cursor=pointer]:
+            - /url: /app/analytics
+            - img [ref=e66]
+            - generic [ref=e76]: Analytics
+          - link "Notifications" [ref=e77] [cursor=pointer]:
+            - /url: /app/notifications
+            - img [ref=e78]
+            - generic [ref=e81]: Notifications
+          - link "Audit Log" [ref=e82] [cursor=pointer]:
+            - /url: /app/audit
+            - img [ref=e83]
+            - generic [ref=e85]: Audit Log
+        - generic [ref=e86]:
+          - generic [ref=e87]: Admin
+          - link "Teams" [ref=e88] [cursor=pointer]:
+            - /url: /app/teams
+            - img [ref=e89]
+            - generic [ref=e94]: Teams
+          - link "Users" [ref=e95] [cursor=pointer]:
+            - /url: /app/users
+            - img [ref=e96]
+            - generic [ref=e100]: Users
+          - link "Clients" [ref=e101] [cursor=pointer]:
+            - /url: /app/clients
+            - img [ref=e102]
+            - generic [ref=e106]: Clients
+          - link "Connectors" [ref=e107] [cursor=pointer]:
+            - /url: /app/connectors
+            - img [ref=e108]
+            - generic [ref=e112]: Connectors
+      - generic [ref=e113]:
+        - button "Light mode" [ref=e114] [cursor=pointer]:
+          - img [ref=e115]
+          - generic [ref=e121]: Light mode
+        - link "Settings" [ref=e122] [cursor=pointer]:
+          - /url: /app/settings
+          - img [ref=e123]
+          - generic [ref=e126]: Settings
+        - button "Sign out" [ref=e127] [cursor=pointer]:
+          - img [ref=e128]
+          - generic [ref=e131]: Sign out
+    - generic [ref=e132]:
+      - banner [ref=e133]:
+        - generic [ref=e134]:
+          - generic [ref=e135]: Operational workspace
+          - generic [ref=e136]:
+            - strong [ref=e137]: QA Org A
+            - generic [ref=e139]: QA Admin
+            - generic [ref=e141]: BPO_ADMIN
+        - generic [ref=e143]:
+          - generic [ref=e144]: Q
+          - generic [ref=e145]: qa.admin.audit1@example.com
+      - main [ref=e146]:
+        - generic [ref=e147]:
+          - generic [ref=e149]:
+            - generic [ref=e150]: Executive snapshot
+            - heading "Revenue cycle dashboard" [level=1] [ref=e151]
+            - paragraph [ref=e152]: A live view of queue pressure, automation throughput, in-review volume, and immediate operational signals.
+          - generic [ref=e153]:
+            - generic [ref=e154]:
+              - generic [ref=e155]:
+                - generic [ref=e156]: Total claims
+                - img [ref=e158]
+              - generic [ref=e162]: "1"
+              - generic [ref=e163]: Across the selected operational window
+            - generic [ref=e164]:
+              - generic [ref=e165]:
+                - generic [ref=e166]: Straight-through rate
+                - img [ref=e168]
+              - generic [ref=e171]: 0.00%
+              - generic [ref=e172]: 0 auto-completed claims
+            - generic [ref=e173]:
+              - generic [ref=e174]:
+                - generic [ref=e175]: In review
+                - img [ref=e177]
+              - generic [ref=e179]: "1"
+              - generic [ref=e180]: 0 escalations raised
+            - generic [ref=e181]:
+              - generic [ref=e182]:
+                - generic [ref=e183]: Average processing time
+                - img [ref=e185]
+              - generic [ref=e188]: 0m
+              - generic [ref=e189]: Completed claims only
+          - generic [ref=e190]:
+            - generic [ref=e191]:
+              - heading "Pipeline distribution" [level=2] [ref=e193]
+              - generic [ref=e195]:
+                - strong [ref=e196]: "1"
+                - generic [ref=e197]: Reviewing
+            - generic [ref=e198]:
+              - heading "Queue health" [level=2] [ref=e200]
+              - generic [ref=e201]:
+                - generic [ref=e202]:
+                  - text: Waiting
+                  - strong [ref=e203]: "0"
+                - generic [ref=e204]:
+                  - text: Active
+                  - strong [ref=e205]: "0"
+                - generic [ref=e206]:
+                  - text: Completed
+                  - strong [ref=e207]: "0"
+                - generic [ref=e208]:
+                  - text: Failed
+                  - strong [ref=e209]: "0"
+            - generic [ref=e210]:
+              - heading "Recent notifications" [level=2] [ref=e212]
+              - generic [ref=e213]:
+                - heading "Inbox is clear" [level=3] [ref=e215]
+                - paragraph [ref=e216]: Notification events will appear here when the backend produces alerts for the current user.
+  - status [ref=e222]: Signed in

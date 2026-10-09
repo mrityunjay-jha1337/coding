@@ -1,0 +1,142 @@
+- generic [ref=e109]:
+  - complementary [ref=e110]:
+    - generic [ref=e111]:
+      - generic [ref=e112]: CI
+      - generic [ref=e113]:
+        - generic [ref=e114]: ClaimsIntell
+        - generic [ref=e115]: RCM operating system
+    - button "Toggle sidebar" [ref=e116] [cursor=pointer]:
+      - img [ref=e117]
+    - navigation [ref=e119]:
+      - generic [ref=e120]:
+        - generic [ref=e121]: Operations
+        - link "Dashboard" [ref=e122] [cursor=pointer]:
+          - /url: /app/dashboard
+          - img [ref=e123]
+          - generic [ref=e128]: Dashboard
+        - link "Claims" [ref=e129] [cursor=pointer]:
+          - /url: /app/claims
+          - img [ref=e130]
+          - generic [ref=e134]: Claims
+        - link "ICD Extractor" [ref=e135] [cursor=pointer]:
+          - /url: /app/icd
+          - img [ref=e136]
+          - generic [ref=e140]: ICD Extractor
+        - link "Denials" [ref=e141] [cursor=pointer]:
+          - /url: /app/denials
+          - img [ref=e142]
+          - generic [ref=e144]: Denials
+      - generic [ref=e145]:
+        - generic [ref=e146]: Intelligence
+        - link "Analytics" [ref=e147] [cursor=pointer]:
+          - /url: /app/analytics
+          - img [ref=e148]
+          - generic [ref=e158]: Analytics
+        - link "Notifications" [ref=e159] [cursor=pointer]:
+          - /url: /app/notifications
+          - img [ref=e160]
+          - generic [ref=e163]: Notifications
+        - link "Audit Log" [ref=e164] [cursor=pointer]:
+          - /url: /app/audit
+          - img [ref=e165]
+          - generic [ref=e167]: Audit Log
+      - generic [ref=e168]:
+        - generic [ref=e169]: Admin
+        - link "Teams" [ref=e170] [cursor=pointer]:
+          - /url: /app/teams
+          - img [ref=e171]
+          - generic [ref=e176]: Teams
+        - link "Users" [ref=e177] [cursor=pointer]:
+          - /url: /app/users
+          - img [ref=e178]
+          - generic [ref=e182]: Users
+        - link "Clients" [ref=e183] [cursor=pointer]:
+          - /url: /app/clients
+          - img [ref=e184]
+          - generic [ref=e188]: Clients
+        - link "Connectors" [ref=e189] [cursor=pointer]:
+          - /url: /app/connectors
+          - img [ref=e190]
+          - generic [ref=e194]: Connectors
+    - generic [ref=e195]:
+      - button "Light mode" [ref=e196] [cursor=pointer]:
+        - img [ref=e197]
+        - generic [ref=e203]: Light mode
+      - link "Settings" [ref=e204] [cursor=pointer]:
+        - /url: /app/settings
+        - img [ref=e205]
+        - generic [ref=e208]: Settings
+      - button "Sign out" [ref=e209] [cursor=pointer]:
+        - img [ref=e210]
+        - generic [ref=e213]: Sign out
+  - generic [ref=e214]:
+    - banner [ref=e215]:
+      - generic [ref=e216]:
+        - generic [ref=e217]: Operational workspace
+        - generic [ref=e218]:
+          - strong [ref=e219]: QA Org A
+          - generic [ref=e221]: QA Admin
+          - generic [ref=e223]: BPO_ADMIN
+      - generic [ref=e225]:
+        - generic [ref=e226]: Q
+        - generic [ref=e227]: qa.admin.audit1@example.com
+    - main [ref=e228]:
+      - generic [ref=e463]:
+        - generic [ref=e464]:
+          - generic [ref=e465]:
+            - generic [ref=e466]: Claim review
+            - heading "CLM-2026-1BWBJ" [level=1] [ref=e469]
+            - paragraph [ref=e468]: Review documents, coding suggestions, escalation history, and move the claim through the lifecycle.
+          - generic [ref=e471]: Reviewing
+        - generic [ref=e472]:
+          - generic [ref=e473]:
+            - heading "Overview" [level=2] [ref=e475]
+            - generic [ref=e476]:
+              - generic [ref=e477]:
+                - text: Client
+                - strong [ref=e478]: Unassigned
+              - generic [ref=e479]:
+                - text: Team
+                - strong [ref=e480]: Unassigned
+              - generic [ref=e481]:
+                - text: Assigned handler
+                - strong [ref=e482]: Unassigned
+              - generic [ref=e483]:
+                - text: Processing time
+                - strong [ref=e484]: 0m
+              - generic [ref=e485]:
+                - text: Created
+                - strong [ref=e486]: Apr 5, 2026 14:39
+              - generic [ref=e487]:
+                - text: Updated
+                - strong [ref=e488]: Apr 5, 2026 14:41
+          - generic [ref=e489]:
+            - heading "Workflow controls" [level=2] [ref=e491]
+            - generic [ref=e492]:
+              - combobox [ref=e493]:
+                - option "REVIEWING" [selected]
+                - option "BUILDING"
+                - option "COMPLETE"
+                - option "ON_HOLD"
+              - button "Update status" [ref=e494] [cursor=pointer]
+              - combobox [ref=e495]:
+                - option "Select handler" [selected]
+              - button "Assign handler" [disabled] [ref=e496] [cursor=pointer]
+        - generic [ref=e497]:
+          - generic [ref=e498]:
+            - heading "Coding review" [level=2] [ref=e500]
+            - generic [ref=e501]:
+              - heading "No coding records" [level=3] [ref=e503]
+              - paragraph [ref=e504]: Coding results will populate after the backend reaches the coding stage.
+          - generic [ref=e505]:
+            - heading "Documents" [level=2] [ref=e507]
+            - generic [ref=e509]:
+              - generic [ref=e510]:
+                - strong [ref=e511]: 2-cl231227270509-itl-eng.pdf
+                - paragraph [ref=e512]: UNKNOWN · application/pdf · 0 pages
+              - generic [ref=e513]: Pending
+        - generic [ref=e514]:
+          - heading "Audit trail" [level=2] [ref=e516]
+          - generic [ref=e517]:
+            - heading "No audit events yet" [level=3] [ref=e519]
+            - paragraph [ref=e520]: Events will appear when actions are performed against this claim.
